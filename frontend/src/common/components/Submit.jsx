@@ -1,7 +1,6 @@
 import { useStore } from '../store/store';
 import { shallow } from 'zustand/shallow';
-
-const BACKEND_URL = 'http://localhost:8000';
+import { parsePipeline } from '../services/api';
 
 export const SubmitButton = () => {
     const { nodes, edges } = useStore(
@@ -14,22 +13,7 @@ export const SubmitButton = () => {
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch(`${BACKEND_URL}/pipelines/parse`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    nodes: nodes,
-                    edges: edges,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await parsePipeline(nodes, edges);
             const dagStatus = data.is_dag ? 'Yes' : 'No';
             const message = `Pipeline Analysis Results:\n\n` +
                           `Number of Nodes: ${data.num_nodes}\n` +
@@ -39,7 +23,7 @@ export const SubmitButton = () => {
             alert(message);
         } catch (error) {
             console.error('Error submitting pipeline:', error);
-            alert(`Error submitting pipeline: ${error.message}\n\nMake sure the backend is running on ${BACKEND_URL}`);
+            alert(`Error submitting pipeline: ${error.message}\n\nMake sure the backend is running.`);
         }
     };
 
